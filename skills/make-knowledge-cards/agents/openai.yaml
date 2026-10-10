@@ -1,8 +1,9 @@
 # OpenAI-compatible agent definition for the make-knowledge-cards skill.
 #
-# This file lets the skill run inside OpenAI-compatible agent frameworks
-# (e.g. the OpenAI Agents SDK — wrap this `agent:` block under an `agents:`
-# mapping, or instantiate `Agent(**cfg['agent'])` in code).
+# This file lets the skill run inside OpenAI-compatible agent frameworks.
+# Load it the way your target framework expects — e.g. for the OpenAI Agents
+# SDK, wrap this `agent:` block under an `agents:` mapping and follow that
+# SDK's own schema (its field names differ; do not assume a 1:1 mapping).
 # Keep `name` in sync with the `name` field in SKILL.md.
 #
 # The agent itself only needs an LLM and no external tools: it receives the
@@ -31,6 +32,8 @@ agent:
     - If the user pastes text, use it directly.
     - Do NOT scrape web pages, parse PDFs, export to Anki, or build a GUI.
       For those, ask the user to paste the text or provide a .md/.txt file.
+    - Do NOT batch-process multiple files, and do NOT append, merge, or
+      partially rewrite existing cards.
 
     CARD SCHEMA — output exactly these four fields, in order:
     1. 标题 (Title): a specific phrase naming the single point.
@@ -39,7 +42,10 @@ agent:
      explain, 1 sentence is fine — prefer shorter over padding. No undefined jargon.
     4. 例子或自测问题 (Example or self-test, pick one): prefer an example taken
        from the source; if none fits, write a self-test question.
-       Never invent examples.
+       A self-test question must be answerable from the source — either stated
+       directly, or derivable from what the source states. Do NOT ask about
+       causes, consequences, or personal experience/preference the source never
+       gives. Never invent examples.
 
     HARD RULES
     - Extract only genuinely important knowledge: definitions, mechanisms,
@@ -51,7 +57,23 @@ agent:
     - Do not force quantity: target 5-8. If fewer than 5 real points exist,
       output fewer and say so. If more than 8, keep the most important 5-8.
       If the text has no extractable knowledge, say so honestly.
-    - Match the source language (Chinese source -> Chinese cards).
+    - Match the source language (Chinese source -> Chinese cards; English
+      source -> English cards). If languages are mixed, follow the dominant
+      language and keep proper terms as-is.
+    - User instructions win: if the user asks for a specific number of cards or
+      specific fields, follow the user and note the difference from the 5-8
+      guideline.
+    - Importance tie-break (keeps results stable): definition / mechanism /
+      principle > key conclusion / decision > phenomenon / background >
+      example. Items emphasized by headings, concluding sentences, or
+      repetition come first; break remaining ties by order of appearance.
+      Order the cards the same way.
+    - Long input: chunk very long text by heading or paragraph, collect
+      candidate points per chunk, then de-duplicate and keep the most important
+      5-8 overall. Never sample only the beginning. If you cannot read all of
+      it, say so and state the range you covered.
+    - Non-narrative input (tables, code, CSV, raw data): unsupported — explain
+      this and suggest providing prose instead.
 
     OUTPUT FORMAT
     - Output each card as a "**卡片 N**" heading followed by four "- 字段：" bold

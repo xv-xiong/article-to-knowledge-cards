@@ -6,6 +6,8 @@
 
 另附 `agents/openai.yaml`（可选）：面向 OpenAI 兼容智能体框架的定义文件，便于显式接入，**并非使用本技能的必要条件**。
 
+> 名称说明：仓库名为 `article-to-knowledge-cards`，技能名（即目录名）为 `make-knowledge-cards`——后者必须与 `SKILL.md` 的 `name` 一致，故未随仓库名改动，二者不同属正常。
+
 ## TL;DR (English)
 
 - **What:** A `SKILL.md` skill that turns a pasted article or a local `.md` / `.txt` file into 5–8 knowledge cards. Each card has four fixed fields: Title / Core knowledge / Plain explanation / Example or self-test question. It follows the open **Agent Skills** spec, so the same folder runs unchanged in WorkBuddy, Claude Code, Codex CLI, DeepSeek Harness and other compatible agents — and can be pasted as a prompt anywhere else.
@@ -67,7 +69,12 @@
 3. 去重，换种说法重复同一意思只做一张
 4. 不编造，不推断、不延伸、不补充原文没有的事实
 5. 不凑数，目标 5~8 张，不足如实少出，超出保留最关键的
-6. 语言一致（中文源 → 中文卡；英文源 → 英文卡）
+6. 语言一致（中文源 → 中文卡；英文源 → 英文卡；中英混排时正文跟随主要语言、专有术语保留原文）
+
+**另有两项配套约定**（用于消除歧义、减少结果漂移）：
+
+- **用户指令优先**：用户明确指定张数或字段时，以用户要求为准，并在开头说明与"5~8 张"建议的差异。
+- **重要性判定准则**：定义 / 机制 / 原理 > 关键结论 / 决策 > 现象 / 背景 > 举例；被标题、结论句或重复强调者优先；仍同分则按原文出现顺序。卡片排列也按此准则。
 
 **适配 5 类常见文本形态**（这是本 Skill 的实用之处，规则里逐条写明了怎么处理）：
 
@@ -78,6 +85,8 @@
 | 清单 / 攻略类（"N 个方法"）    | 先合并含义相近的条目，再按重要性保留 5~8 张                                    |
 | 极短 / 闲聊文本            | 只有 1~2 个真要点就如实少出；毫无知识点则直接说明                                 |
 | 大量外链 / 推荐阅读 / 带广告的文章 | 只取正文**实际陈述**的信息；标题清单与广告一律剔除；正文只提问、答案在外链的，算作"不可提炼"，**不代它作答** |
+| 篇幅很长的文本（如上万字）        | 按小标题 / 段落分块抽候选点，全局去重后取 5~8 张；不得只取开头；无法读全时说明覆盖范围           |
+| 表格 / 代码 / CSV 等非叙述性输入 | 不适用，说明并建议先转写成文字说明                                                |
 
 **输入来源**：对话中粘贴的文本，或本地 `.md` / `.txt` 文件。
 
@@ -87,6 +96,8 @@
 - ✗ 读取或解析 PDF
 - ✗ 导出到 Anki 或任何特定复习软件
 - ✗ 图形界面 / 可视化卡片排版
+- ✗ 多文件批量处理
+- ✗ 在已有卡片上追加 / 合并 / 局部重写
 
 ---
 
@@ -246,11 +257,11 @@ HTTP 是无状态协议，每次请求独立；Cookie 由服务器通过 Set-Coo
 
 | 文本类型  | 输入                    | 输出                                      | 体现的规则            |
 | ----- | --------------------- | --------------------------------------- | ---------------- |
-| 技术说明文 | `inputs/technical.md` | `examples/make-knowledge-cards/outputs/technical.cards.md`（7 张）       | 密集知识点拆分          |
-| 观点论述文 | `inputs/essay.txt`    | `examples/make-knowledge-cards/outputs/essay.cards.md`（5 张）           | 论点成卡、论据入解释       |
-| 极短文本  | `inputs/short.txt`    | `examples/make-knowledge-cards/outputs/short.cards.md`（3 张）           | **不凑数**          |
-| 清单攻略文 | `inputs/listicle.md`  | `examples/make-knowledge-cards/outputs/listicle.cards.md`（10 条 → 8 张） | **去重 + 拆分 + 截断到 8 张** |
-| 日常闲聊  | `inputs/chat.txt`     | `examples/make-knowledge-cards/outputs/chat.cards.md`（0 张）            | 无知识点时如实说明        |
+| 技术说明文 | `examples/make-knowledge-cards/inputs/technical.md` | `examples/make-knowledge-cards/outputs/technical.cards.md`（7 张）       | 密集知识点拆分          |
+| 观点论述文 | `examples/make-knowledge-cards/inputs/essay.txt`    | `examples/make-knowledge-cards/outputs/essay.cards.md`（5 张）           | 论点成卡、论据入解释       |
+| 极短文本  | `examples/make-knowledge-cards/inputs/short.txt`    | `examples/make-knowledge-cards/outputs/short.cards.md`（3 张）           | **不凑数**          |
+| 清单攻略文 | `examples/make-knowledge-cards/inputs/listicle.md`  | `examples/make-knowledge-cards/outputs/listicle.cards.md`（10 条 → 8 张） | **去重 + 拆分 + 截断到 8 张** |
+| 日常闲聊  | `examples/make-knowledge-cards/inputs/chat.txt`     | `examples/make-knowledge-cards/outputs/chat.cards.md`（0 张）            | 无知识点时如实说明        |
 
 
 ---
@@ -261,9 +272,11 @@ HTTP 是无状态协议，每次请求独立；Cookie 由服务器通过 Set-Coo
 article-to-knowledge-cards/
 ├── README.md
 ├── CHANGELOG.md            # 各版本变更记录（Keep a Changelog 格式）
+├── CONTRIBUTING.md         # 贡献指南
 ├── LICENSE                 # MIT
 ├── .gitignore
 ├── .gitattributes
+├── .github/                # Issue / PR 模板
 ├── skills/make-knowledge-cards/
 │   ├── SKILL.md            # 技能说明、卡片结构、抽取规则、输入形态适配
 │   └── agents/
@@ -280,6 +293,8 @@ article-to-knowledge-cards/
 ## 7. 维护约定
 
 抽取规则同时写在两份文件里：`SKILL.md`（完整，含"常见输入形态"等适配）与 `agents/openai.yaml`（精简版，字段与硬规则一致）。**修改任意一条抽取规则时，必须同步改这两份文件**，否则会出现规则漂移。本仓库早期版本就因两份文件措辞不一致，导致示例输出出现了编造例子——这一教训已被写进两份文件的硬规则中。
+
+改完规则后还须回查 `examples/make-knowledge-cards/outputs/` 下的 5 组输出是否仍合规——**尤其自测问题必须能由对应输入的原文支撑**（不得询问原文未解释的原因、未给出的后果，或纯个人体验 / 偏好）。
 
 ## 8. 反面示例
 
@@ -311,6 +326,7 @@ article-to-knowledge-cards/
 - [ ] `description` 不含尖括号 `<>`、不含未经验证的功能声明
 - [ ] 每张卡片四个字段齐全且顺序为：标题 → 核心知识 → 简明解释 → 例子或自测问题
 - [ ] `agents/openai.yaml` 的 `name` 与 `SKILL.md` 一致；`instructions` 含全部硬规则
+- [ ] `examples/` 中每条自测问题都能由对应输入原文支撑（无纯个人体验 / 偏好题、无原文未解释的因果）
 - [ ] 全仓库无 BOM、无 CRLF（UTF-8 LF）
 
 ---
@@ -319,7 +335,7 @@ article-to-knowledge-cards/
 
 - 无脚本、无第三方依赖，仅靠模型本身，开箱即用。
 - `agents/openai.yaml` 是 `SKILL.md` 的精简版（含核心字段、硬规则与输出格式）；完整的"常见输入形态"等适配规则以 `SKILL.md` 为准。两者可分别在 WorkBuddy 与 OpenAI 兼容框架中使用。
-- 欢迎提交 Issue / PR 改进抽取规则与示例。
+- 贡献流程见 [CONTRIBUTING.md](CONTRIBUTING.md)；欢迎提交 Issue / PR 改进抽取规则与示例。
 
 ## License
 
