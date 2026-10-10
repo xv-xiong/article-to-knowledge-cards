@@ -1,13 +1,15 @@
 # make-knowledge-cards
 
-一个可开源的 WorkBuddy Skill：把**粘贴的文章**或**本地 Markdown / TXT 文件**，转换成 **5~8 张知识卡片**，每张卡片只讲一个知识点。
+一个基于 **Agent Skills 开放规范** 的知识卡片技能：把**粘贴的文章**或**本地 Markdown / TXT 文件**，转换成 **5~8 张知识卡片**，每张卡片只讲一个知识点。
 
-同时提供 `agents/openai.yaml`，便于复用到 OpenAI 兼容的智能体框架。
+技能本体就是一份 `SKILL.md`（Markdown + YAML frontmatter），**不含脚本、不依赖任何运行时私有的 SDK**。因此它**不限于 WorkBuddy**——凡支持 Agent Skills 规范（读取 `SKILL.md`）的智能体都可直接加载，例如 Claude Code、Codex CLI、DeepSeek Harness、GitHub Copilot、Cursor、Gemini CLI 等；不支持该规范的工具，也可把 `SKILL.md` 正文当提示词使用（见[安装方法](#3-安装方法)）。
+
+另附 `agents/openai.yaml`（可选）：面向 OpenAI 兼容智能体框架的定义文件，便于显式接入，**并非使用本技能的必要条件**。
 
 ## TL;DR (English)
 
-- **What:** A WorkBuddy Skill (and OpenAI-compatible agent) that turns a pasted article or a local `.md` / `.txt` file into 5–8 knowledge cards. Each card has four fixed fields: Title / Core knowledge / Plain explanation / Example or self-test question.
-- **Install:** Copy the `make-knowledge-cards/` folder into your skills directory (see 安装方法). No scripts, no dependencies.
+- **What:** A `SKILL.md` skill that turns a pasted article or a local `.md` / `.txt` file into 5–8 knowledge cards. Each card has four fixed fields: Title / Core knowledge / Plain explanation / Example or self-test question. It follows the open **Agent Skills** spec, so the same folder runs unchanged in WorkBuddy, Claude Code, Codex CLI, DeepSeek Harness and other compatible agents — and can be pasted as a prompt anywhere else.
+- **Install:** Copy the `make-knowledge-cards/` folder into your agent's skills directory — e.g. `~/.workbuddy/skills/`, `~/.claude/skills/`, `~/.agents/skills/` (see 安装方法). No scripts, no dependencies.
 - **Try it now:** Paste any article and say "做成知识卡片", or copy the `SKILL.md` body into any chat model as a prompt.
 
 ## 目录
@@ -122,7 +124,25 @@ Copy-Item -Recurse skills/make-knowledge-cards "$env:USERPROFILE/.workbuddy/skil
     └── openai.yaml
 ```
 
-### 方式二：作为 OpenAI 兼容智能体
+### 方式二：作为其他兼容 Agent 的技能
+
+`SKILL.md` 遵循 Agent Skills 开放规范，同一份目录**无需改动**即可被下列运行时加载——区别只在技能目录位置：
+
+| 运行时 | 技能目录（用户级） | 说明 |
+| --- | --- | --- |
+| WorkBuddy | `~/.workbuddy/skills/` | 同方式一 |
+| Claude Code | `~/.claude/skills/` | 可用 `CLAUDE_CONFIG_DIR` 覆盖 |
+| Codex CLI | `~/.agents/skills/`（用户级）、`<repo>/.agents/skills/`（项目级） | 另有 `/etc/codex/skills/`（管理员级），见 OpenAI Codex 官方 Skills 文档 |
+| DeepSeek Harness（`dsh` CLI） | `$DSH_HOME/skills/` 或 `~/.agents/skills/` | 也扫描项目内 `.dsh/skills/`、`.agents/skills/` |
+| 其他（GitHub Copilot、Cursor、Gemini CLI、Cline 等） | 多数读取 `~/.agents/skills/` | 少数有专属目录 |
+
+三点注意：
+
+1. `name` 必须是 kebab-case，且与技能目录名一致（本技能为 `make-knowledge-cards`，已符合）。
+2. 各运行时只扫描技能根目录的**下一层**，别把技能埋进更深的子目录。
+3. 连 `agents/` 目录一起复制过去即可——`agents/openai.yaml` 会被忽略，不影响加载。
+
+### 方式三：作为 OpenAI 兼容智能体
 
 `agents/openai.yaml` 是一个自包含的智能体定义，顶层结构为：
 
@@ -139,7 +159,7 @@ agent:
 
 按目标框架的要求加载即可（如 OpenAI Agents SDK——把本文件的 `agent:` 块包到 `agents:` 映射下，再交给 SDK 加载）。`instructions` 已内联全部规则，无需额外依赖。
 
-### 方式三：不安装任何东西
+### 方式四：不安装任何东西
 
 把 `skills/make-knowledge-cards/SKILL.md` 的正文（frontmatter 以下部分）整段复制，直接粘给任意聊天模型当提示词，即可即时试用，无需安装。
 
