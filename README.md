@@ -258,10 +258,19 @@ HTTP 是无状态协议，每次请求独立；Cookie 由服务器通过 Set-Coo
 ## 6. 目录结构
 
 ```
-skills/make-knowledge-cards/
-├── SKILL.md            # 技能说明、卡片结构、抽取规则、输入形态适配
-└── agents/
-    └── openai.yaml     # OpenAI 兼容智能体定义（精简版）
+article-to-knowledge-cards/
+├── README.md
+├── CHANGELOG.md            # 各版本变更记录（Keep a Changelog 格式）
+├── LICENSE                 # MIT
+├── .gitignore
+├── .gitattributes
+├── skills/make-knowledge-cards/
+│   ├── SKILL.md            # 技能说明、卡片结构、抽取规则、输入形态适配
+│   └── agents/
+│       └── openai.yaml     # OpenAI 兼容智能体定义（精简版，可选）
+└── examples/make-knowledge-cards/
+    ├── inputs/             # 5 组测试用例输入
+    └── outputs/            # 对应的 5 组卡片输出
 ```
 
 整个 Skill 仅 2 个文件、无脚本依赖，全部能力由模型本身完成。
