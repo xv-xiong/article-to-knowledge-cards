@@ -21,6 +21,7 @@
   14  文本形态条数一致   README「适配 N 类常见文本形态」标题 / 表格行数 / SKILL.md 条目
   15  能力边界条数一致   README 第 2 节的 ✗ 列表 <-> SKILL.md 的 Unsupported
   16  反面示例例数一致   README 第 8 节「下面 N 例」<-> 实际 ❌ 条目数
+  17  校验项条数声明一致 本清单 / README「它覆盖：…」/ CHANGELOG「把 N 项」<-> 实际校验项数
 
 用法：python tools/check_skill.py     退出码 0 = 全部通过，1 = 存在失败项
 """
@@ -512,12 +513,46 @@ def check_anti_examples():
            ["标题写「%s例」，实际 %d 条 ❌" % (cn, n_actual)])
 
 
+def check_self_description():
+    """校验项总数与三处声明一致：本文件清单 / README 覆盖列表 / CHANGELOG。"""
+    actual = len(CHECKS)
+    bad = []
+
+    doc = __doc__ or ""
+    n_doc = len(re.findall(r"^\s*(\d+)\s{2,}\S", doc, re.M))
+    if n_doc != actual:
+        bad.append("脚本自身清单列了 %d 项，实际注册 %d 项" % (n_doc, actual))
+
+    rd = read(README)
+    m = re.search(r"它覆盖：(.+?)。", rd, re.S)
+    if not m:
+        bad.append("README 找不到「它覆盖：……」覆盖列表")
+    else:
+        items = [x.strip() for x in m.group(1).replace("\n", "").split("、") if x.strip()]
+        if len(items) != actual:
+            bad.append("README 覆盖列表写了 %d 项，实际 %d 项" % (len(items), actual))
+
+    cl = read("CHANGELOG.md")
+    m = re.search(r"把\s*(\d+)\s*项可机器判定的约定", cl)
+    if not m:
+        bad.append("CHANGELOG 找不到「把 N 项可机器判定的约定」")
+    elif int(m.group(1)) != actual:
+        bad.append("CHANGELOG 写「%s 项」，实际 %d 项" % (m.group(1), actual))
+
+    report(not bad, "17. 校验项条数声明三处一致（脚本清单 / README / CHANGELOG）",
+           bad or ["三处均为 %d 项" % actual])
+
+
+CHECKS = (check_encoding, check_frontmatter, check_name, check_description,
+          check_rule_count, check_inline_example, check_declared_counts,
+          check_readme_table, check_tree, check_compat_table,
+          check_selftest_phrases, check_audit, check_card_schema,
+          check_text_shapes, check_boundaries, check_anti_examples,
+          check_self_description)
+
+
 def main():
-    for fn in (check_encoding, check_frontmatter, check_name, check_description,
-               check_rule_count, check_inline_example, check_declared_counts,
-               check_readme_table, check_tree, check_compat_table,
-               check_selftest_phrases, check_audit, check_card_schema,
-               check_text_shapes, check_boundaries, check_anti_examples):
+    for fn in CHECKS:
         try:
             fn()
         except Exception as exc:  # noqa: BLE001

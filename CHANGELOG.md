@@ -4,11 +4,11 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [Unreleased]
+## [0.3.0] - 2026-10-11
 
 ### 新增
 
-- 新增 `tools/check_skill.py`：仓库一致性校验脚本（**纯标准库、无第三方依赖**）。把 15 项可机器判定的约定写成断言——编码 / 行尾、frontmatter 键白名单、`name` 格式与目录名一致、`description` 长度与字符、抽取规则条数一致（含中文数字）、`SKILL.md` 与 `README.md` 两处内嵌示例逐字一致、示例首行声明张数 = 实际卡片数、README 示例表格张数、目录树与真实文件清单一致、兼容表每行都有出处、自测问题禁用句式、`AUDIT.md` 依据片段逐字命中、卡片四字段顺序、文本形态条数一致、能力边界条数一致。
+- 新增 `tools/check_skill.py`：仓库一致性校验脚本（**纯标准库、无第三方依赖**）。把 17 项可机器判定的约定写成断言——编码 / 行尾、frontmatter 键白名单、`name` 格式与目录名一致、`description` 长度与字符、抽取规则条数一致（含中文数字）、`SKILL.md` 与 `README.md` 两处内嵌示例逐字一致、示例首行声明张数 = 实际卡片数、README 示例表格张数、目录树与真实文件清单一致、兼容表每行都有出处、自测问题禁用句式、`AUDIT.md` 依据片段逐字命中、卡片四字段顺序、文本形态条数一致、能力边界条数一致、反面示例例数一致、脚本条数声明自洽。
 - 新增 `examples/make-knowledge-cards/AUDIT.md`：示例**锚点审计表**。每张卡一行，给出「断言摘要 + 逐字依据片段」；`check_skill.py` 校验每个依据片段是否确实逐字出现在对应输入原文里，且行数等于卡片数。这是唯一能结构性防住"悄悄给卡片加上原文没有的因果 / 对照"的办法——它逼作者把依据摆出来。
 - 新增 `.github/workflows/ci.yml`：push / PR 时自动运行校验脚本。仅使用 `actions/checkout`，不引入任何第三方 Action，纯 `python3` 运行。
 - 新增 6 组示例，覆盖此前完全空白的规则：`external_links`（带外链 / 广告、正文只提问而答案在外链）、`long_form`（8 小节长文，分块 + 全局去重）、`dedup`（含同义重复段，"去重"首次被真正演示）、`bilingual`（中英混排）、`injection`（第 8 条防注入的正向用例）、`structured`（表格 / JSON / SQL，明确拒绝）。示例总数 5 组 → 11 组。
@@ -88,7 +88,8 @@
 - OpenAI 兼容智能体定义 `agents/openai.yaml`（可选，非使用前提）。
 - 5 组真实输入输出示例、MIT 许可证。
 
-[Unreleased]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/xv-xiong/article-to-knowledge-cards/releases/tag/v0.1.0
