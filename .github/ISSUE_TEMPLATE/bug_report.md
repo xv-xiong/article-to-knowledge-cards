@@ -27,4 +27,4 @@ labels: bug
 
 **运行环境**
 
-<!-- 例如：WorkBuddy / Claude Code / Codex CLI / DeepSeek Harness + 模型名 -->
+<!-- 例如：WorkBuddy（作者实测）；或 Claude Code / Codex CLI / GitHub Copilot 等（README 第 3 节列为「未实测」）。请注明运行时 + 模型名 -->
