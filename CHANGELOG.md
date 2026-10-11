@@ -4,7 +4,7 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [Unreleased]
+## [0.2.0] - 2026-10-11
 
 ### 新增
 
@@ -44,6 +44,7 @@
 - OpenAI 兼容智能体定义 `agents/openai.yaml`（可选，非使用前提）。
 - 5 组真实输入输出示例、MIT 许可证。
 
-[Unreleased]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/xv-xiong/article-to-knowledge-cards/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/xv-xiong/article-to-knowledge-cards/releases/tag/v0.1.0
